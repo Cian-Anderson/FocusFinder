@@ -471,76 +471,74 @@ testing, evaluation, and references, see the
 
 ## Deployment
 
-The final FocusFinder system was packaged as a **standalone Windows desktop
+The final FocusFinder system is distributed as a **standalone Windows desktop
 application**.
 
-The release package contains the core application components, including:
+The packaged release contains the core application components, including:
 
 - The Electron desktop shell
 - The compiled React frontend
 - The Python backend
 - Required runtime dependencies
 
-This means an end user can install and run the finished application without
-manually installing Python or Node.js or starting the frontend and backend as
-separate processes.
+The Electron main process automatically starts and manages the Python backend
+internally, allowing the application to run as a single desktop program without
+requiring the user to install or manually start Python, Node.js, the frontend,
+or the backend separately.
 
-When FocusFinder launches, the Electron main process automatically starts and
-manages the Python backend internally.
+### Download FocusFinder
 
-### Windows Installer
+### [Download FocusFinder v1.0.0 for Windows](https://github.com/Cian-Anderson/FocusFinder/releases/tag/v1.0.0)
 
-The final `.exe` installer is distributed through this repository's
-**GitHub Releases** page.
+The **Windows installer provided on the GitHub Releases page is the only
+supported and successfully tested way to run FocusFinder**.
 
-The installer is intended for users who want to run the finished application.
-The source-code instructions below are intended for developers who want to
-inspect, modify, or rebuild the project.
+The source code is included in this repository for portfolio review,
+technical inspection, documentation, and further development, but the current
+source tree is **not intended to be launched directly as a complete working
+application**.
 
 > **Note:** If the release executable is unsigned, Windows SmartScreen may show
 > a warning when launching it for the first time.
 
-### Building the Release
+### Release Build
 
-The Windows release is produced by:
+The Windows release was produced by:
 
 1. Building the React frontend with Vite
 2. Packaging the Electron desktop application
 3. Bundling the Python backend and its required dependencies
 4. Generating the Windows installer using `electron-builder` with an NSIS target
 
-The relevant build configuration and packaging scripts are included with the
-source code.
+The release packaging removes the need for the development-time process
+orchestration used while the project was being built.
 
 ---
 
-## Running from Source
+## Source Code
 
-Running FocusFinder from source is intended for development, testing, or code
-inspection.
+The full source code is included in this repository to demonstrate the
+implementation of FocusFinder and allow its individual components to be
+reviewed.
 
-### Requirements
+It includes:
 
-- Windows 10 or newer
-- Python 3.10+
-- Node.js 18+
-- npm
+- Python activity monitoring and classification
+- Flask API and database integration
+- Contextual Multi-Armed Bandit implementation
+- Electron desktop integration
+- React and TypeScript user interface
+- Backend tests
+- Build and packaging configuration
+- Technical documentation
 
-### Automated Development Startup
+Because the final submitted system was packaged around the Windows installer,
+the repository's development scripts and source-level startup instructions are
+retained primarily for reference and development history.
 
-From the repository root:
-
-```powershell
-.\start.ps1
-```
-
-The development startup process launches the Python backend and Electron desktop
-interface.
-
-For full installation instructions, development setup, configuration, and
-troubleshooting, see:
-
-### [Quick Start Guide](./QUICK_START.md)
+**To use FocusFinder as a complete application, install the packaged release
+from the GitHub Releases page rather than attempting to run the source tree
+directly.**
 
 ---
 
