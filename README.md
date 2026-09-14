@@ -256,20 +256,20 @@ For a deeper technical breakdown, see
 
 ## Technology Stack
 
-| Area | Technology |
-|---|---|
-| Desktop Application | Electron |
-| Frontend | React + TypeScript |
-| Backend | Python |
-| Local API | Flask |
-| Database | SQLite |
-| ORM | SQLAlchemy |
-| Optional Database Encryption | SQLCipher |
-| Encryption Key Protection | Windows DPAPI |
-| Activity Monitoring | pygetwindow, pynput, psutil, pywin32 |
-| Adaptive Decision-Making | Contextual Multi-Armed Bandit / UCB |
-| Audio Prompts | Web Speech API |
-| Report Generation | Electron `printToPDF()` |
+| Area                         | Technology                           |
+| ---------------------------- | ------------------------------------ |
+| Desktop Application          | Electron                             |
+| Frontend                     | React + TypeScript                   |
+| Backend                      | Python                               |
+| Local API                    | Flask                                |
+| Database                     | SQLite                               |
+| ORM                          | SQLAlchemy                           |
+| Optional Database Encryption | SQLCipher                            |
+| Encryption Key Protection    | Windows DPAPI                        |
+| Activity Monitoring          | pygetwindow, pynput, psutil, pywin32 |
+| Adaptive Decision-Making     | Contextual Multi-Armed Bandit / UCB  |
+| Audio Prompts                | Web Speech API                       |
+| Report Generation            | Electron `printToPDF()`              |
 
 ---
 
@@ -454,6 +454,7 @@ The project covered:
 - Automated and manual testing
 - System evaluation
 - Technical documentation
+- Desktop application packaging and deployment
 
 The project's primary aim was to design and implement an adaptive productivity
 support system capable of monitoring user behaviour and delivering personalised
@@ -468,18 +469,64 @@ testing, evaluation, and references, see the
 
 ---
 
-## Running FocusFinder
+## Deployment
 
-FocusFinder is designed for Windows and is deployed as a standalone Electron
-desktop application.
+The final FocusFinder system was packaged as a **standalone Windows desktop
+application**.
+
+The release package contains the core application components, including:
+
+- The Electron desktop shell
+- The compiled React frontend
+- The Python backend
+- Required runtime dependencies
+
+This means an end user can install and run the finished application without
+manually installing Python or Node.js or starting the frontend and backend as
+separate processes.
+
+When FocusFinder launches, the Electron main process automatically starts and
+manages the Python backend internally.
+
+### Windows Installer
+
+The final `.exe` installer is distributed through this repository's
+**GitHub Releases** page.
+
+The installer is intended for users who want to run the finished application.
+The source-code instructions below are intended for developers who want to
+inspect, modify, or rebuild the project.
+
+> **Note:** If the release executable is unsigned, Windows SmartScreen may show
+> a warning when launching it for the first time.
+
+### Building the Release
+
+The Windows release is produced by:
+
+1. Building the React frontend with Vite
+2. Packaging the Electron desktop application
+3. Bundling the Python backend and its required dependencies
+4. Generating the Windows installer using `electron-builder` with an NSIS target
+
+The relevant build configuration and packaging scripts are included with the
+source code.
+
+---
+
+## Running from Source
+
+Running FocusFinder from source is intended for development, testing, or code
+inspection.
 
 ### Requirements
 
-- Windows
-- Python
-- Node.js / npm
+- Windows 10 or newer
+- Python 3.10+
+- Node.js 18+
+- npm
 
-### Automated Startup
+### Automated Development Startup
 
 From the repository root:
 
@@ -487,8 +534,8 @@ From the repository root:
 .\start.ps1
 ```
 
-The application startup process launches the Python backend and Electron
-desktop interface.
+The development startup process launches the Python backend and Electron desktop
+interface.
 
 For full installation instructions, development setup, configuration, and
 troubleshooting, see:
@@ -499,13 +546,13 @@ troubleshooting, see:
 
 ## Documentation
 
-| Document | Purpose |
-|---|---|
-| [README.md](./README.md) | Project overview |
-| [QUICK_START.md](./QUICK_START.md) | Installation and troubleshooting |
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | Detailed system architecture and data flow |
-| [TECH_STACK.md](./activity-monitoring-component/TECH_STACK.md) | Technical dependencies and implementation details |
-| [Final Project Report](./docs/FocusFinder_Final_Report.pdf) | Full research, design, implementation, testing, and evaluation |
+| Document                                                       | Purpose                                                        |
+| -------------------------------------------------------------- | -------------------------------------------------------------- |
+| [README.md](./README.md)                                       | Project overview                                               |
+| [QUICK_START.md](./QUICK_START.md)                             | Development installation and troubleshooting                   |
+| [ARCHITECTURE.md](./ARCHITECTURE.md)                           | Detailed system architecture and data flow                     |
+| [TECH_STACK.md](./activity-monitoring-component/TECH_STACK.md) | Technical dependencies and implementation details              |
+| [Final Project Report](./docs/FocusFinder_Final_Report.pdf)    | Full research, design, implementation, testing, and evaluation |
 
 ---
 

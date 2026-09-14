@@ -1,0 +1,776 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ADHD Reminder</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+      overflow: hidden;
+      background: transparent;
+      -webkit-app-region: no-drag;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .notification-container {
+      width: 100%;
+      height: 100%;
+      padding: 16px;
+      animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(450px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .notification-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 20px;
+      box-shadow:
+        0 12px 48px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+      padding: 28px;
+      min-height: 100%;
+      height: auto;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .notification-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.35);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .notification-card.high {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    }
+
+    .notification-card.medium {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .notification-card.low {
+      background: linear-gradient(135deg, #a8b8ff 0%, #8b9dff 100%);
+    }
+
+    .notification-card.subtle {
+      transform: scale(0.96);
+      opacity: 0.92;
+      box-shadow:
+        0 8px 28px rgba(0, 0, 0, 0.32),
+        0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    .notification-card.assertive {
+      transform: scale(1.02);
+      box-shadow:
+        0 16px 64px rgba(0, 0, 0, 0.52),
+        0 0 0 1px rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      z-index: 10;
+    }
+
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.1);
+    }
+
+    .icon-container {
+      display: none;
+    }
+
+    .title {
+      color: white;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      line-height: 1.3;
+      text-shadow:
+        0 2px 12px rgba(0, 0, 0, 0.8),
+        0 0 20px rgba(0, 0, 0, 0.5);
+      letter-spacing: 0.3px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .time-display {
+      color: white;
+      font-size: 24px;
+      font-weight: 300;
+      margin-bottom: 20px;
+      text-shadow:
+        0 2px 12px rgba(0, 0, 0, 0.8),
+        0 0 20px rgba(0, 0, 0, 0.5);
+      letter-spacing: 2px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+      display: inline-block;
+      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+      position: relative;
+      z-index: 2;
+    }
+
+    .message {
+      color: white;
+      font-size: 18px;
+      line-height: 1.6;
+      margin-bottom: 28px;
+      flex-grow: 1;
+      text-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.8),
+        0 0 16px rgba(0, 0, 0, 0.5);
+      max-width: 100%;
+      min-width: 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      position: relative;
+      z-index: 2;
+    }
+
+    .action-btn {
+      flex: 1;
+      min-width: 0;
+      padding: 14px 20px;
+      border-radius: 14px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(135deg, #667eea 0%, #5a67d8 100%);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+    }
+
+    .action-btn.primary:hover {
+      background: linear-gradient(135deg, #7c8eef 0%, #6b75dd 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+    }
+
+    .action-btn.secondary {
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .action-btn.secondary:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .progress-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.5);
+      width: 100%;
+      animation: shrink linear;
+    }
+
+    @keyframes shrink {
+      from {
+        width: 100%;
+      }
+
+      to {
+        width: 0%;
+      }
+    }
+
+    @media (max-width: 390px) {
+      .notification-container {
+        padding: 12px;
+      }
+
+      .notification-card {
+        padding: 22px;
+        border-radius: 18px;
+      }
+
+      .title {
+        font-size: 18px;
+        margin-bottom: 16px;
+      }
+
+      .time-display {
+        font-size: 18px;
+        margin-bottom: 16px;
+      }
+
+      .message {
+        font-size: 15px;
+        line-height: 1.45;
+        margin-bottom: 20px;
+      }
+
+      .actions {
+        gap: 10px;
+        padding-top: 16px;
+      }
+
+      .action-btn {
+        padding: 12px 14px;
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="notification-container">
+    <div class="notification-card" id="notification-card">
+      <button class="close-btn" onclick="closeNotification()">✕</button>
+
+      <div class="icon-container" id="icon">🧠</div>
+
+      <h2 class="title" id="title">ADHD Reminder</h2>
+      <div class="time-display" id="time-display"></div>
+      <p class="message" id="message">
+        Your reminder message will appear here.
+      </p>
+
+      <div class="actions">
+        <button class="action-btn secondary" onclick="handleAction('dismiss')">
+          Dismiss
+        </button>
+        <button class="action-btn primary" id="action-btn" onclick="handlePrimaryAction()">
+          Got it!
+        </button>
+      </div>
+
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+  </div>
+
+  <script>
+    let currentReminder = null;
+    let reminderStartTime = null;
+    let lastRequestedSize = null;
+
+    const iconMap = {
+      break: "☕",
+      hydration: "💧",
+      posture: "🪑",
+      "task-switch": "⚡",
+      hyperfocus: "🧠",
+      "time-check": "⏰",
+      reward: "🌟",
+      movement: "🏃",
+      "focus-prep": "🎯",
+    };
+
+    // Speech Synthesis Manager
+    class ReminderSpeechSynthesis {
+      constructor() {
+        this.synth =
+          window.speechSynthesis || (window).webkitSpeechSynthesis;
+        this.currentUtterance = null;
+        this.isSupported = !!this.synth;
+        this.voices = [];
+        this.preferredVoice = null;
+
+        if (this.isSupported) {
+          this.handleVoicesChanged = this.handleVoicesChanged.bind(this);
+          this.loadVoices();
+
+          if (typeof this.synth.addEventListener === "function") {
+            this.synth.addEventListener("voiceschanged", this.handleVoicesChanged);
+          } else {
+            this.synth.onvoiceschanged = this.handleVoicesChanged;
+          }
+        }
+      }
+
+      handleVoicesChanged() {
+        this.loadVoices();
+      }
+
+      loadVoices() {
+        if (!this.isSupported) {
+          return;
+        }
+
+        const availableVoices = this.synth.getVoices() || [];
+        const englishVoices = availableVoices.filter((voice) =>
+          String(voice.lang || "").toLowerCase().startsWith("en"),
+        );
+
+        this.voices = englishVoices.length ? englishVoices : availableVoices;
+        this.preferredVoice = this.pickPreferredVoice(this.voices);
+
+        debugTrace("TTS voices loaded", {
+          voiceCount: this.voices.length,
+          preferredVoice: this.preferredVoice?.name || null,
+          preferredLang: this.preferredVoice?.lang || null,
+        });
+      }
+
+      pickPreferredVoice(voices) {
+        if (!Array.isArray(voices) || voices.length === 0) {
+          return null;
+        }
+
+        const preferredNameHints = [
+          "natural",
+          "neural",
+          "aria",
+          "jenny",
+          "guy",
+          "libby",
+          "sonia",
+          "ryan",
+          "hazel",
+          "zira",
+          "susan",
+          "mark",
+          "david",
+        ];
+
+        const scoredVoices = voices.map((voice) => {
+          const name = String(voice.name || "").toLowerCase();
+          const lang = String(voice.lang || "").toLowerCase();
+          let score = 0;
+
+          if (voice.localService) {
+            score += 5;
+          }
+          if (voice.default) {
+            score += 2;
+          }
+          if (lang.startsWith("en-gb")) {
+            score += 4;
+          } else if (lang.startsWith("en-us")) {
+            score += 3;
+          } else if (lang.startsWith("en")) {
+            score += 2;
+          }
+          if (name.includes("microsoft")) {
+            score += 1;
+          }
+          if (name.includes("desktop")) {
+            score += 1;
+          }
+
+          preferredNameHints.forEach((hint, index) => {
+            if (name.includes(hint)) {
+              score += preferredNameHints.length - index;
+            }
+          });
+
+          return { voice, score };
+        });
+
+        scoredVoices.sort((left, right) => right.score - left.score);
+        return scoredVoices[0]?.voice || null;
+      }
+
+      normalizeText(text) {
+        return String(text || "")
+          .replace(/\s+/g, " ")
+          .replace(/\s*[-:;]\s*/g, ". ")
+          .replace(/\s*,\s*/g, ", ")
+          .replace(/\.{2,}/g, ".")
+          .trim();
+      }
+
+      createUtterance(text) {
+        const utterance = new SpeechSynthesisUtterance(this.normalizeText(text));
+
+        if (this.preferredVoice) {
+          utterance.voice = this.preferredVoice;
+          utterance.lang = this.preferredVoice.lang || "en-GB";
+        } else {
+          utterance.lang = "en-GB";
+        }
+
+        utterance.rate = 1.0;
+        utterance.pitch = 1.02;
+        utterance.volume = 1.0;
+
+        return utterance;
+      }
+
+      speak(text, enableTTS = true) {
+        if (!enableTTS || !this.isSupported) {
+          debugTrace("TTS skipped", {
+            reason: enableTTS ? "not supported" : "disabled",
+          });
+          return;
+        }
+
+        try {
+          this.stop();
+          this.loadVoices();
+
+          const utterance = this.createUtterance(text);
+
+          utterance.onstart = () => {
+            debugTrace("TTS started", {
+              textLength: text.length,
+              voice: utterance.voice?.name || null,
+              lang: utterance.lang || null,
+              rate: utterance.rate,
+              pitch: utterance.pitch,
+            });
+          };
+
+          utterance.onend = () => {
+            this.currentUtterance = null;
+            debugTrace("TTS ended");
+          };
+
+          utterance.onerror = (event) => {
+            this.currentUtterance = null;
+            debugTrace("TTS error", { error: event.error });
+          };
+
+          this.currentUtterance = utterance;
+          this.synth.speak(utterance);
+          debugTrace("TTS speak() called", {
+            textLength: text.length,
+            voice: utterance.voice?.name || null,
+          });
+        } catch (error) {
+          debugTrace("TTS error on speak", { error: String(error) });
+        }
+      }
+
+      stop() {
+        if (!this.isSupported) return;
+
+        try {
+          this.synth.cancel();
+          this.currentUtterance = null;
+          debugTrace("TTS stopped");
+        } catch (error) {
+          debugTrace("TTS error on stop", { error: String(error) });
+        }
+      }
+
+      isSpeaking() {
+        if (!this.isSupported) return false;
+        return this.synth.speaking;
+      }
+    }
+
+    const speechManager = new ReminderSpeechSynthesis();
+
+    function requestNotificationResize() {
+      if (
+        !window.electron ||
+        typeof window.electron.resizeNotificationWindow !== "function"
+      ) {
+        return;
+      }
+
+      const container = document.querySelector(".notification-container");
+      const card = document.getElementById("notification-card");
+      if (!container || !card) {
+        return;
+      }
+
+      const containerStyles = window.getComputedStyle(container);
+      const paddingX =
+        parseFloat(containerStyles.paddingLeft || "0") +
+        parseFloat(containerStyles.paddingRight || "0");
+      const paddingY =
+        parseFloat(containerStyles.paddingTop || "0") +
+        parseFloat(containerStyles.paddingBottom || "0");
+      const desiredWidth = Math.ceil(card.scrollWidth + paddingX);
+      const desiredHeight = Math.ceil(card.scrollHeight + paddingY);
+      const nextSize = {
+        width: desiredWidth,
+        height: desiredHeight,
+      };
+
+      if (
+        lastRequestedSize &&
+        lastRequestedSize.width === nextSize.width &&
+        lastRequestedSize.height === nextSize.height
+      ) {
+        return;
+      }
+
+      lastRequestedSize = nextSize;
+      debugTrace("requestNotificationResize", nextSize);
+      window.electron.resizeNotificationWindow(nextSize);
+    }
+
+    function scheduleNotificationResize() {
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          requestNotificationResize();
+        });
+      });
+    }
+
+    window.electron.onSetReminderData((reminder) => {
+      debugTrace("set-reminder-data received", {
+        id: reminder?.id,
+        type: reminder?.type,
+        duration: reminder?.duration,
+        priority: reminder?.priority,
+        enableTTS: reminder?.enableTTS,
+      });
+      currentReminder = reminder;
+      reminderStartTime = Date.now();
+
+      // Set current time
+      const now = new Date();
+      const timeString = now.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+      document.getElementById("time-display").textContent = timeString;
+
+      document.getElementById("title").textContent = reminder.title;
+      document.getElementById("message").textContent = reminder.message;
+      document.getElementById("icon").textContent =
+        iconMap[reminder.type] || "🧠";
+
+      const card = document.getElementById("notification-card");
+      const windowMode = reminder.windowMode || "standard";
+      card.className = `notification-card ${reminder.priority} ${windowMode}`;
+
+      // Set primary action button based on type
+      const actionBtn = document.getElementById("action-btn");
+      if (reminder.type === "break") {
+        actionBtn.innerHTML = "⏱️ Start 5-min Break →";
+      } else if (reminder.type === "focus-prep") {
+        actionBtn.innerHTML = "🍅 Start 10-min Timer →";
+      } else if (reminder.type === "time-check") {
+        actionBtn.innerHTML = "✓ I'm on Track →";
+      } else if (reminder.type === "movement") {
+        actionBtn.innerHTML = "💪 Quick Stretch →";
+      } else if (reminder.type === "hydration") {
+        actionBtn.innerHTML = "💧 Getting Water →";
+      } else {
+        actionBtn.innerHTML = "✓ Got it! →";
+      }
+
+      lastRequestedSize = null;
+      scheduleNotificationResize();
+
+      // Set progress bar animation duration
+      const progressBar = document.getElementById("progress-bar");
+      progressBar.style.animationDuration = `${reminder.duration || 120000}ms`;
+
+      // Trigger TTS: Combine title and message into a single sentence
+      const ttsEnabled = reminder.enableTTS !== false; // Default to true
+      if (ttsEnabled) {
+        const textToSpeak = `${reminder.title}. ${reminder.message}`;
+        speechManager.speak(textToSpeak, true);
+      }
+
+      // Set timeout to log "ignored" if no response
+      setTimeout(() => {
+        if (currentReminder) {
+          debugTrace("Reminder auto-marked ignored due to timeout", {
+            id: currentReminder.id,
+            type: currentReminder.type,
+          });
+          logReminderResponse("ignored");
+        }
+      }, reminder.duration || 120000);
+    });
+
+    window.addEventListener("load", scheduleNotificationResize);
+    window.addEventListener("resize", scheduleNotificationResize);
+
+    function debugTrace(message, payload = {}) {
+      const data = {
+        ts: new Date().toISOString(),
+        message,
+        payload,
+      };
+      console.log("[ReminderDebug]", data);
+      try {
+        if (
+          window.electron &&
+          typeof window.electron.debugReminder === "function"
+        ) {
+          window.electron.debugReminder(data);
+        }
+      } catch (err) {
+        console.error("Failed to send debug trace to main process:", err);
+      }
+    }
+
+    function logReminderResponse(responseType) {
+      if (!currentReminder) return;
+
+      const responseTime = reminderStartTime
+        ? Math.floor((Date.now() - reminderStartTime) / 1000)
+        : null;
+
+      const normalizedResponse = String(responseType || "").toLowerCase();
+      const responseScore =
+        normalizedResponse === "dismissed" ||
+          normalizedResponse === "ignored" ||
+          normalizedResponse === "dismissed-close"
+          ? -0.3
+          : 0.3;
+
+      const payload = {
+        reminder_id: currentReminder.id,
+        reminder_type: currentReminder.type,
+        reminder_title: currentReminder.title,
+        reminder_message: currentReminder.message,
+        priority: currentReminder.priority,
+        response_type: responseType,
+        response_score: responseScore,
+        response_time_seconds: responseTime,
+      };
+
+      const apiBaseUrl =
+        (currentReminder && currentReminder.apiBaseUrl) ||
+        "http://127.0.0.1:5001";
+
+      fetch(`${apiBaseUrl}/api/reminder/response`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+        .then(() => {
+          debugTrace("Reminder response logged successfully", {
+            responseType,
+            reminderType: payload.reminder_type,
+            reminderId: payload.reminder_id,
+          });
+        })
+        .catch((err) => {
+          console.error("Failed to log reminder response:", err);
+          debugTrace("Reminder response logging failed", {
+            responseType,
+            error: String(err),
+          });
+        });
+    }
+
+    function closeNotification() {
+      debugTrace("closeNotification invoked", {
+        hasReminder: !!currentReminder,
+        reminderType: currentReminder?.type,
+        reminderId: currentReminder?.id,
+      });
+      speechManager.stop(); // Stop any ongoing TTS
+      logReminderResponse("dismissed");
+      window.electron.sendNotificationAction("dismissed-close");
+      currentReminder = null;
+      window.electron.closeNotification();
+    }
+
+    function handleAction(action) {
+      debugTrace("handleAction invoked", {
+        action,
+        hasReminder: !!currentReminder,
+      });
+      speechManager.stop(); // Stop any ongoing TTS
+      if (action === "dismiss") {
+        logReminderResponse("dismissed");
+      }
+      window.electron.sendNotificationAction(action);
+      debugTrace("handleAction sent action to electron", { action });
+    }
+
+    function handlePrimaryAction() {
+      debugTrace("handlePrimaryAction start", {
+        hasReminder: !!currentReminder,
+        reminderType: currentReminder?.type,
+        reminderId: currentReminder?.id,
+      });
+      if (currentReminder) {
+        const reminderType = currentReminder.type;
+        logReminderResponse("acknowledged");
+        currentReminder = null;
+        debugTrace("handlePrimaryAction after acknowledged", {
+          reminderType,
+        });
+
+        if (reminderType === "break") {
+          debugTrace("handlePrimaryAction dispatching start-break");
+          handleAction("start-break");
+        } else if (reminderType === "focus-prep") {
+          debugTrace("handlePrimaryAction dispatching start-pomodoro");
+          handleAction("start-pomodoro");
+        } else {
+          debugTrace("handlePrimaryAction dispatching acknowledge");
+          handleAction("acknowledge");
+        }
+      }
+      debugTrace("handlePrimaryAction end");
+    }
+  </script>
+</body>
+
+</html>

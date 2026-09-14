@@ -1,0 +1,67 @@
+{
+  "name": "adhd-activity-monitor",
+  "version": "1.0.15",
+  "description": "ADHD-focused activity monitoring desktop app",
+  "author": "FYP Team",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build:frontend": "npm --prefix frontend run build",
+    "dist:win": "npm run build:frontend && electron-builder --win nsis",
+    "dist:dir": "npm run build:frontend && electron-builder --dir",
+    "release:win": "powershell -ExecutionPolicy Bypass -File ./scripts/release-installer.ps1"
+  },
+  "devDependencies": {
+    "electron": "^40.8.5",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.fyp.adhdactivitymonitor",
+    "productName": "ADHD Activity Monitor",
+    "artifactName": "${productName}-Setup-${version}.${ext}",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "notification.html",
+      "frontend/dist/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../../activity-monitoring-component/python_backend",
+        "to": "backend",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../../reinforcement-algorithm/python",
+        "to": "backend/reinforcement-algorithm/python",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": true,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}
