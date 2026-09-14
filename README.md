@@ -490,8 +490,10 @@ manages the Python backend internally.
 
 ### Windows Installer
 
-The final `.exe` installer is distributed through this repository's
-**GitHub Releases** page.
+### [Download FocusFinder for Windows]([YOUR-RELEASE-URL](https://github.com/Cian-Anderson/FocusFinder/releases/tag/v1.0.0))
+
+The packaged Windows installer includes the Electron interface, compiled React
+frontend, Python backend, and required runtime dependencies.
 
 The installer is intended for users who want to run the finished application.
 The source-code instructions below are intended for developers who want to
