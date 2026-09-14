@@ -584,6 +584,3 @@ I would like to thank **Dr. Svetlana Hensman, Brian Gillespie,
 Ciarán O'Driscoll, and Sean O'Leary** for their guidance and support throughout
 the Final Year Project process.
 
----
-
-**FocusFinder — adaptive productivity support through behavioural feedback.**
